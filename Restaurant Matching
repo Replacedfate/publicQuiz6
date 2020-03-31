@@ -1,0 +1,89 @@
+#Program that collects users data about their restaurant and adds it to a database
+import os.path
+restaurant_file = "costa_restaurant_export.txt"
+
+def greet_user():
+    print("Hello, welcome to the restaurant finder program")
+
+#return a list of all resteraunts
+def get_restaurants()->dict:
+    #check if file exists
+    assert os.path.exists(restaurant_file) == 1, "INVALID FILE"
+    with open(restaurant_file, 'r') as f:
+        f.readline()
+        restaurants = {}
+        for line in f:
+            #reads and formats the data
+            text = line.rstrip()
+            result = text.split(',')
+            name = result[0]
+            info = result[1:]
+            #adds the formatted data to dictonary
+            restaurants[name] = info
+        return restaurants
+
+def yes_no_check(response: str)->bool:
+    return not response.lower() == 'yes' and not response.lower() == 'no'
+
+def get_zipcode()->str:
+    zip_check = input("Do you want to enter the zip code? (Yes/No): ")
+
+    while yes_no_check(zip_check):
+        zip_check = input("Invalid selection, please type yes or no ")
+    #if user wants to add zipcode do so
+    if zip_check.lower() == 'yes':
+        zip_code = input("Please enter the zip code: ")
+    else:
+        zip_code = "none"
+    return zip_code
+
+#Check if restaurant name already exists
+def check_restaurant_unique(name: str)->bool:
+    restaurants = get_restaurants()
+    case_set = set(r.lower() for r in restaurants)
+    if name in restaurants:
+        return False
+    else:
+        return True
+
+#Ask the user for the restaurant info and return it as a list
+def get_restaurant_info()->list:
+    restaurants = get_restaurants()
+    name = input("What is the name of restaurant we are adding? ")
+    while not check_restaurant_unique(name):
+       name = input("That name already exists, please try another: ")
+    zip_code = get_zipcode()
+    
+    veritarian = input("Do you serve vegitarian food? (Yes/No): ")
+    while yes_no_check(veritarian):
+        vegitarian = input("Invalid selection, please type yes or no ")
+    vegan = input("Do you serve vegan food? (Yes/No): ")
+    while yes_no_check(vegan):
+        vegan = input("Invalid selection, please type yes or no ")
+    gluten_free = input("Do you serve gluten-free food? (Yes/No): ")
+    while yes_no_check(gluten_free):
+        gluten_free = input("Invalid selection, please type yes or no ")
+
+    new_restaurant = (
+        name + ", " \
+        + zip_code + ", " \
+        + veritarian.lower() + ", " \
+        + vegan.lower() + ", " \
+        + gluten_free.lower()
+        )
+    return new_restaurant
+    
+    
+#Add resteraunt information to the database
+def add_restaurant(restaurant_info: str)->None:
+    #check if file exists
+    assert os.path.exists(restaurant_file) == 1, "INVALID FILE"
+    with open(restaurant_file, 'a') as f:
+        f.write('\n' + restaurant_info)
+        
+
+        
+if __name__ == "__main__":
+    greet_user()
+    new_restaurant = get_restaurant_info()
+    add_restaurant(new_restaurant)
